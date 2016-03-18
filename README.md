@@ -1,7 +1,10 @@
 # SparkPost WP Mail Dropin
 
 Dropin wp_mail() replacement for WordPress that uses the SparkPost.com 
-API
+API.
+
+Heavily based on prior art by @danielbachhuber for 
+[Mandrill](https://github.com/danielbachhuber/mandrill-wp-mail)
 
 ## How to Use
 
