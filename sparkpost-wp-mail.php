@@ -46,45 +46,57 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 
 	$message_args = array(
 		// Email
-		'recipients'         => $to,
+		'recipients'         => array( // json array
+			array(
+				'address'           => array( // string|json object
+					'email'     => $to, // string
+					'name'      => null, // string
+					'header_to' => null, // string
+				),
+				'return_path'       => null, // string    Elite only
+				'tags'              => array(), // json array
+				'metadata'          => null, // json object
+				'substitution_data' => null, // json object
+			),
+		),
+		'content'            => array( // json object
+			'html'          => $message, // string
+			'text'          => $message, // string
+			'subject'       => $subject, // string
+			'from'          => array( // string|json object
+				'email' => $from_email,
+				'name'  => get_bloginfo( 'name' ),
+			),
+			'reply_to'      => null, // string
+			'headers'       => null, // json obect
+			'attachments'   => array(), // json array
+			'inline_images' => array(), // json array
+		),
+
+		// Options
+		'options'            => array( // json object
+			'start_time'       => 'now', // string  YYYY-MM-DDTHH:MM:SS+-HH:MM
+			'open_tracking'    => null, // bool
+			'click_tracking'   => null, // bool
+			'transactional'    => null, // bool
+			'sandbox'          => false, // bool
+			'skip_suppression' => null, // bool
+			'inline_css'       => null, // bool
+		),
+
+		// SparkPost defaults
 		'headers'            => array(
 			'Content-type'  => 'application/json',
 			'Authorization' => SPARKPOST_API_KEY,
 			'User-Agent'    => 'sparkpost-wp-mail',
 		),
-		'content'            => array(
-			'html'          => $message,
-			'text'          => null,
-			'subject'       => $subject,
-			'from'          => array(
-				'email' => $from_email,
-				'name'  => get_bloginfo( 'name' ),
-			),
-			'reply_to'      => null,
-			'headers'       => array(),
-			'attachments'   => array(),
-			'inline_images' => array(),
-		),
-
-		// Options
-		'options'            => array(
-			'start_time'       => null,
-			'open_tracking'    => null,
-			'click_tracking'   => null,
-			'transactional'    => null,
-			'sandbox'          => false,
-			'skip_suppression' => null,
-			'inline_css'       => null,
-		),
-
-		// SparkPost defaults
-		'description'        => null,
-		'campaign_id'        => null,
-		'metadata'           => array(),
-		'substitution_data'  => array(),
-		'return_path'        => null, // Elite only
-		'template_id'        => '',
-		'use_draft_template' => null,
+		'description'        => null, // string
+		'campaign_id'        => null, // string
+		'metadata'           => null, // json object
+		'substitution_data'  => null, // json object
+		'return_path'        => null, // string    Elite only
+		'template_id'        => null, // string
+		'use_draft_template' => null, // bool
 	);
 
 	$message_args = apply_filters( 'sparkpost_wp_mail_pre_message_args', $message_args );
@@ -100,7 +112,21 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 		if ( is_array( $email ) ) {
 			$processed_to[] = $email;
 		} else {
-			$processed_to[] = array( 'email' => $email );
+			$user = get_user_by( 'email', $email );
+			if ( $user ) {
+				$processed_to[] = array(
+					'address' => array(
+						'email' => $email,
+						'name'  => $user->get( 'display_name' ),
+					),
+				);
+			} else {
+				$processed_to[] = array(
+					'address' => array(
+						'email' => $email,
+					),
+				);
+			}
 		}
 	}
 	$message_args['recipients'] = $processed_to;
@@ -127,7 +153,8 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 	$message_args = apply_filters( 'sparkpost_wp_mail_message_args', $message_args );
 
 	$request_args = array(
-		'body' => $message_args,
+		'headers' => $message_args['headers'],
+		'body'    => wp_json_encode( $message_args ),
 	);
 
 	$request_url = 'https://api.sparkpost.com/api/v1/transmissions';
@@ -196,7 +223,7 @@ function _sparkpost_wp_mail_headers( $headers, $message_args ) {
 						'type'  => 'cc',
 					);
 				}
-				$message_args['content']['headers']['cc'] = array_merge( $message_args['content']['headers']['cc'], $processed_cc );
+				$message_args['content']['headers']['cc'] = implode( ';', array_merge( $message_args['content']['headers']['cc'], $processed_cc ) );
 				break;
 
 			case 'bcc':
@@ -208,15 +235,7 @@ function _sparkpost_wp_mail_headers( $headers, $message_args ) {
 						'type'  => 'bcc',
 					);
 				}
-				$message_args['content']['headers']['bcc'] = array_merge( $message_args['content']['headers']['bcc'], $processed_bcc );
-				break;
-
-			case 'importance':
-			case 'x-priority':
-			case 'x-msmail-priority':
-				if ( ! $message_args['important'] ) {
-					$message_args['important'] = ( strpos( strtolower( $content ), 'high' ) !== false ) ? true : false;
-				}
+				$message_args['content']['headers']['bcc'] = implode( ';', array_merge( $message_args['content']['headers']['bcc'], $processed_bcc ) );
 				break;
 
 			default:

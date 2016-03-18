@@ -1,0 +1,19 @@
+{
+  "name" : "sanchothefat/sparkpost-wp-mail",
+  "description" : "wp_mail() drop-in for SparkPost",
+  "keywords" : ["wordpress"],
+  "homepage" : "https://github.com/sanchothefat/sparkpost-wp-mail",
+  "license" : "GPL-2.0+",
+  "type" : "wordpress-muplugin",
+  "authors" : [
+    {
+      "name" : "Robert O'Rourke",
+      "email" : "robert@o-rourke.org",
+      "homepage" : "http://röb.co",
+      "role" : "Developer"
+    }
+  ],
+  "require" : {
+    "composer/installers" : "~1.0"
+  }
+}
