@@ -60,7 +60,7 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 			),
 		),
 		'content'            => array( // json object
-			'html'          => $message, // string
+			// 'html'          => '' // string - html OR text must be supplied, html takes precedence
 			'text'          => $message, // string
 			'subject'       => $subject, // string
 			'from'          => array( // string|json object
@@ -70,18 +70,18 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 			'reply_to'      => null, // string
 			'headers'       => null, // json obect
 			'attachments'   => array(), // json array
-			'inline_images' => array(), // json array
+			// 'inline_images' => array(), // json array - requires HTML
 		),
 
 		// Options
 		'options'            => array( // json object
 			'start_time'       => 'now', // string  YYYY-MM-DDTHH:MM:SS+-HH:MM
-			'open_tracking'    => null, // bool
-			'click_tracking'   => null, // bool
-			'transactional'    => null, // bool
+			'open_tracking'    => false, // bool
+			'click_tracking'   => false, // bool
+			'transactional'    => false, // bool
 			'sandbox'          => false, // bool
-			'skip_suppression' => null, // bool
-			'inline_css'       => null, // bool
+			'skip_suppression' => false, // bool
+			'inline_css'       => false, // bool
 		),
 
 		// SparkPost defaults
@@ -96,7 +96,7 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 		'substitution_data'  => null, // json object
 		'return_path'        => null, // string    Elite only
 		'template_id'        => null, // string
-		'use_draft_template' => null, // bool
+		'use_draft_template' => false, // bool
 	);
 
 	$message_args = apply_filters( 'sparkpost_wp_mail_pre_message_args', $message_args );
