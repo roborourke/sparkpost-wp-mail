@@ -60,8 +60,8 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 			),
 		),
 		'content'            => array( // json object
-			// 'html'          => '' // string - html OR text must be supplied, html takes precedence
-			'text'          => $message, // string
+			// 'html'          => '', // string - html OR text must be supplied, html takes precedence
+			// 'text'          => '', // string
 			'subject'       => $subject, // string
 			'from'          => array( // string|json object
 				'email' => $from_email,
@@ -98,6 +98,21 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 		'template_id'        => null, // string
 		'use_draft_template' => false, // bool
 	);
+
+	// Set up message headers if we have any to send.
+	if ( ! empty( $headers ) ) {
+		$message_args = _sparkpost_wp_mail_headers( $headers, $message_args );
+	}
+
+	// Set mail body depending on existing content type headers
+	if ( isset( $message_args['content']['headers']['x-content-type'] ) &&
+		false !== strpos( $message_args['content']['headers']['x-content-type'], 'text/html' )
+	) {
+		$message_args['content']['html'] = $message;
+		$message_args['content']['inline_images'] = array();
+	} else {
+		$message_args['content']['text'] = $message;
+	}
 
 	$message_args = apply_filters( 'sparkpost_wp_mail_pre_message_args', $message_args );
 
@@ -138,11 +153,6 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 			'name' => basename( $attachment ),
 			'data' => 'data:' . mime_content_type( $attachment ) . ';base64,' . base64_encode( file_get_contents( $attachment ) ),
 		);
-	}
-
-	// Set up message headers if we have any to send.
-	if ( ! empty( $headers ) ) {
-		$message_args = _sparkpost_wp_mail_headers( $headers, $message_args );
 	}
 
 	// Default filters we should still apply.
@@ -236,6 +246,10 @@ function _sparkpost_wp_mail_headers( $headers, $message_args ) {
 					);
 				}
 				$message_args['content']['headers']['bcc'] = implode( ';', array_merge( $message_args['content']['headers']['bcc'], $processed_bcc ) );
+				break;
+
+			case 'content-type':
+				$message_args['content']['headers'][ 'x-' . trim( strtolower( $name ) ) ] = trim( $content );
 				break;
 
 			default:
