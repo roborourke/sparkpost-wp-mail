@@ -220,7 +220,13 @@ function _sparkpost_wp_mail_headers( $headers, $message_args ) {
 			case 'subject':
 			case 'from':
 			case 'to':
+				unset( $headers[ $index ] );
+				break;
+
 			case 'reply-to':
+				if ( ! empty( $headers[ $index ] ) ) {
+					$message_args['content']['reply_to'] = $content;
+				}
 				unset( $headers[ $index ] );
 				break;
 
