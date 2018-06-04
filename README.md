@@ -10,13 +10,13 @@ Heavily based on prior art by
 ## How to Use
 
 To implement this drop-in, add it to your `mu-plugins` directory. In 
-order for it to work, you must define your Mandrill API key. The easiest 
+order for it to work, you must define your SparkPost API key. The easiest 
 way to do this is to add it to your `wp-config.php` file like so:
 
 `define( 'SPARKPOST_API_KEY', 'your-api-key' );`
 
 If you've cloned this repo into your mu-plugins directory as the full 
-folder (e.g. `wp-content/mu-plugins/mandrill-wp-mail`, you'll need to 
+folder (e.g. `wp-content/mu-plugins/sparkpost-wp-mail`, you'll need to 
 make sure you load the plugin files:
 
 ```
